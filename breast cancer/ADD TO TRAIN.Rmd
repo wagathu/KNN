@@ -1,0 +1,135 @@
+---
+title: "'SEQUENTIAL TRAINING UPDATES'"
+author: "Stanley Sayianka"
+date: "3/13/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# The k-NN case
+
+Hi, Thom ives PhD.
+I will demonstrate the idea of updating the training data during prediction using the famous breast cancer dataset here. (Although i have used several other datasets to do the same technique.)
+
+## LOADING DATA
+```{r data}
+# loading packages
+library(pacman)
+p_load(class, dplyr)
+
+# working directory
+setwd("C:/Users/stanley/Desktop/MISCELLANEOUS R/ml projects/Knn/breast cancer")
+
+# loading dataset
+wbcd<-read.csv(file.choose(), as.is=T)
+
+# removing ID column
+wbcd<-wbcd[, -1]
+head(wbcd)
+
+# changing target feature(diagnosis) to factor
+wbcd$diagnosis<-factor(wbcd$diagnosis, 
+                       levels=c("B", "M"), 
+                       labels=c("Benign", "Malignant"))
+
+# taking  closer look at three features
+summary(wbcd[c("radius_mean", "area_mean", "smoothness_mean")])
+
+# transforming and normalizing numerical data
+
+#writing a normalization funxtion
+norm<-function(x)
+{
+  return((x-min(x))/(max(x)-min(x)))
+}
+
+wbcd_n<-wbcd
+for (j in 2:31)
+{
+  wbcd_n[ ,j]<-norm(wbcd_n[ ,j])
+}
+```
+
+## GLIMPSE OF STRUCTURE AND SUMMARY
+```{r glimpse}
+# a glimpse of data
+glimpse(wbcd_n)
+```
+ 
+The data has all those variables and around 569 observations.
+I now prepare the data for modelling, by checking if there are any missing values, and then split the data into training and testing, simply.
+```{r prepare}
+# maintaining the original form of the data
+wbcd_train <- wbcd_n[1:469, -1]
+wbcd_test <- wbcd_n[470:569, -1]
+
+wbcd_train_labels <- wbcd_n[1:469, 1]
+wbcd_test_labels <- wbcd_n[470:569, 1]
+
+# to ensure no NAs in the data we do
+sum(is.na(wbcd_test))
+sum(is.na(wbcd_train))
+# if 0, no NA values exist
+
+```
+
+The model itself is shown below
+```{R models}
+
+#kNN implementation from class package
+library(class)
+
+# model with k = 21
+wbcd_test_pred<-knn(train=wbcd_train, test=wbcd_test, 
+                    cl=wbcd_train_labels, k=21, prob=T)
+table(wbcd_test_pred, wbcd_test_labels)
+
+```
+From the confusion matrix, using k nearest neighbours as(k=21, i found it was the best overall k), i have 2 incorrectly classified ones, we can say we have some 98% accuracy(although i know there are a lot of other things to check before concluding).
+
+## THE "ADDING TO TRAIN WHILE PREDICTING" MODEL
+
+Now, from here, i write a loop which will help us do this.
+1. Train the model first using the training data
+
+2. Use the trained model, to predict the first test instance.
+
+3. Add that predicted instance to the training data and then use that updated training data to re fit the model.
+
+4. Loop from 2 to 3 until we arrive at our last test instance
+
+During predicting the last test instance, the trained model will have as many rows as the total number of orignal training rows + (the total number of testing rows - 1).
+
+```{r newmodel}
+
+# now using the "adding to train rows" model
+train <- wbcd_train
+test <- wbcd_test
+trainlabs <- wbcd_train_labels
+testlabs <- wbcd_test_labels
+pred <- vector()
+
+for (i in 1:nrow(test))
+{
+  pred[i] <- knn(train=train, test=test[i,], 
+               cl=trainlabs, k=21, prob = T)
+  # print(paste("label: ",pred[i]))
+  
+  train <- rbind(train, test[i,])
+  trainlabs <- c(trainlabs, testlabs[i])
+  
+  message(paste("Total number of Train instances now at: ", nrow(train)))
+}
+table(pred, wbcd_test_labels)
+
+
+```
+
+As we can see, using the same number of nearest neighbours (k=21), we now have 4 incorrectly classified persons, accuracy drops to 96%.
+
+What could the problem be ?
+
+Thanks, and just incase you find instances of bad coding habits/practices in my code, be sure to point out.

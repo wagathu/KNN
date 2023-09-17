@@ -1,0 +1,24 @@
+---
+title: "wbcd for html harvesting"
+author: "NC workforce"
+date: "8/8/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r setwd, T, T}
+setwd("C:\\Users\\Admin\\Desktop\\MISCELLANEOUS R\\ml projects\\Knn\\wine classification")
+```
+
+Loading data
+```{r getdata, T,T}
+data<-read.csv("wine quality.csv", as.is=T)
+```
+
+data itself
+```{r display, T, T}
+data[1:30,]
+```

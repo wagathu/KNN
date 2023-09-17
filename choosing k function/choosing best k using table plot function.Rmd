@@ -1,0 +1,22 @@
+---
+title: "Best k in kNN Algorithm using a table-plot function"
+author: "NC workforce"
+date: "6/15/2020"
+output: html_document
+toc : yes
+---
+
+\newpage
+# INTRODUCTION
+In this article, I assume that one is fully aware of k Nearest Neighbors classifier. 
+Deciding how many neighbors(k) to use for the k Nearest Neighbor classifier determines how well the model will work with the data.
+
+Suppose we choose a large *k*, reduces the effect caused by noisy data, but will affect the classifier in that it runs the risk of ignoring small but important patterns.
+
+If we decide to set k equal to the total number of training observations i.e *nrow(train dataset)*, the most common raining class will definately have majority of the votes.
+On the contrary using a single nearest neighbor, i.e setting k=1 **(1NN)**, will allow outliers and noisy data to influence the classification.
+
+The best k value is somewhere between the two instances
+
+\newpage
+# 
